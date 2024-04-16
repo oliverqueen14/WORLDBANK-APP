@@ -12,10 +12,12 @@ size_t writeCallback(char* ptr, size_t size, size_t nmemb, std::string* data) {
 }
 
 int main() {
-	DataManager dataManager("FRA", "NY.GDP.MKTP.CD");
-	dataManager.printData();
+	// DataManager dataManager("FRA", "NY.GDP.MKTP.CD");
+	// dataManager.printData();
+	// DataManager dataManager2("MAF", "SP.POP.TOTL");
+	// // dataManager2.printData();
 	Tools tools;
-	tools.findCountryId("united s") ;
-	tools.findIndicatorId("gdp per capita") ;
+	// DataManager dataManager3("ZWE", "SP.POP.TOTL");
+	// dataManager3 = DataManager("ZWE", "NY.GDP.MKTP.CD");
     return 0;
 }

@@ -46,6 +46,11 @@ class DataManager {
 			readCSV();
 			
 		};
+		DataManager()
+		{
+			data.date = new int[200];
+			data.value = new double[200];
+		};
 		string setUrl()
 		{
 			url = "http://api.worldbank.org/v2/country/" + countryId + "/indicator/" + indicatorId + ".?format=json&per_page=10000";
@@ -110,7 +115,8 @@ class DataManager {
 		{
 			CURL* curl;
 			CURLcode res;
-
+			response = "";
+			
 			curl_global_init(CURL_GLOBAL_DEFAULT);
 			curl = curl_easy_init();
 			if (curl) {
@@ -171,6 +177,7 @@ class DataManager {
 		{
 			if(folderExists())
 			{
+				cout << "Saving data for " << countryId << " " << indicatorId << endl;
 				ofstream file;
 				file.open("data/" + countryId + "/" + indicatorId + ".json");
 				file << response;
@@ -186,6 +193,12 @@ class DataManager {
 		{
 			string command = "python data/convertDataJsonToCsv.py " + countryId + " " + indicatorId;
 			return system(command.c_str());
+		};
+		~DataManager()
+		{
+			cout << "DataManager destructor called for " << countryId << " " << indicatorId << endl;
+			delete[] data.date;
+			delete[] data.value;
 		};
 };
 
@@ -423,6 +436,18 @@ class Tools {
 			countriesIndicatorsManager.importData();
 			countries = countriesIndicatorsManager.countries;
 			indicators = countriesIndicatorsManager.indicators;
+			DataManager dataManager;
+			for (int i = 0; i < countries.size; i++)
+			{
+				cout << countries.id[i] << " : " << countries.name[i] << " : " << countries.region[i] << endl;
+				dataManager.countryId = countries.id[i];
+				dataManager.indicatorId = "NY.GDP.MKTP.CD";
+				dataManager.readCSV();
+				dataManager.indicatorId = "SP.POP.TOTL";
+				dataManager.readCSV();
+				dataManager.indicatorId = "NY.GDP.PCAP.CD";
+				dataManager.readCSV();
+			}
 		};
 		string findCountry(string countryNameResidual)
 		{
