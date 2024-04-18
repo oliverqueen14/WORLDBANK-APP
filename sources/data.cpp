@@ -105,6 +105,18 @@ class GeneralTools {
 			}
 			cout << endl;
 		};
+		static int folderExists(string folder)
+		{
+			if(fs::exists(folder) && fs::is_directory(folder))
+			{
+				return 1;
+			}
+			else
+			{
+				fs::create_directory(folder);
+				return 1;
+			}
+		};
 };
 
 
@@ -1267,19 +1279,22 @@ class Menu{
 		};
 		void generateGraphs(DatasetManager datasetManager, string mainCountryId, int start)
 		{
+			GeneralTools::folderExists("graphs");
+			GeneralTools::folderExists("graphs/" + tools.findCountryName(mainCountryId));
 			DataManager * dataManager;
 			for(int i = 0; i < 5; i++)
 			{
 				for(int j = 0; j < generalIndicators.bookGeneralIndicators[i]->size; j++)
 				{
+					GeneralTools::folderExists("graphs/" + tools.findCountryName(mainCountryId) + "/" + generalIndicators.bookGeneralIndicators[i]->type);
+					string folder = "graphs/" + tools.findCountryName(mainCountryId) + "/" + generalIndicators.bookGeneralIndicators[i]->type + "/";
 					dataManager = new DataManager[datasetManager.numberOfSimilarCountries+1];
 					for(int k = 0; k < datasetManager.numberOfSimilarCountries; k++)
 					{
 						dataManager[k].updateDataManager(datasetManager.similarCountries[k], generalIndicators.bookGeneralIndicators[i]->generalIndicators[j][1]);
 					}
 					dataManager[datasetManager.numberOfSimilarCountries].updateDataManager(mainCountryId, generalIndicators.bookGeneralIndicators[i]->generalIndicators[j][1]);
-					string fileName = mainCountryId + "_" + generalIndicators.bookGeneralIndicators[i]->generalIndicators[j][1];
-					fileName = tools.findCountryName(mainCountryId) + "_" + generalIndicators.bookGeneralIndicators[i]->generalIndicators[j][0];
+					string fileName = folder + tools.findCountryName(mainCountryId) + "_" + generalIndicators.bookGeneralIndicators[i]->generalIndicators[j][0];
 					Graphs graphs(fileName, generalIndicators.bookGeneralIndicators[i]->generalIndicators[j][0], datasetManager.numberOfSimilarCountries+1);
 					for(int k = 0; k < datasetManager.numberOfSimilarCountries+1; k++)
 					{

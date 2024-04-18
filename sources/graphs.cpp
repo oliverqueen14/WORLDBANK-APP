@@ -17,7 +17,7 @@ class Graphs{
 		{
 			this->size = size;
 		    gp << "set terminal pngcairo enhanced font 'Arial,10' size 1920, 1080\n"; // UHD resolution
-			gp << "set output 'pictures/"<< nameFile << ".png" <<"'\n";  // Nom du fichier de sortie
+			gp << "set output '"<< nameFile << ".png" <<"'\n";  // Nom du fichier de sortie
 			gp << "set title '"<< title <<"'\n";
 			gp << "set title font ',20'\n";
 			gp << "set key font ',20'\n";
