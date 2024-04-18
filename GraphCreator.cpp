@@ -10,11 +10,8 @@
 
 using namespace std;
 
-// Fonction de rappel utilisée par libcurl pour traiter les données reçues
-size_t writeCallback(char* ptr, size_t size, size_t nmemb, std::string* data) {
-    data->append(ptr, size * nmemb);
-    return size * nmemb;
-}
+
+class 
 
 int main() {
 	DatasetManager datasetManager("macro");

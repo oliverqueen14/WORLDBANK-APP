@@ -1244,6 +1244,11 @@ class Menu{
 			}
 			//cout << "BOOM" << endl;
 			degree = 20;
+			showSimilarToCountry(datasetManager, countryId, indicatorId, year, degree);
+			mainMenu();
+		};
+		void showSimilarToCountry(DatasetManager datasetManager, string countryId, string indicatorId, int year, int degree)
+		{
 			CountriesComparison::findSimilarCountries(datasetManager, countryId, indicatorId, year, degree);
 			while(datasetManager.numberOfSimilarCountries < 40 && degree < 80)
 			{
@@ -1275,7 +1280,37 @@ class Menu{
 			cout << "Enter the year to start graph : ";
 			cin >> start;
 			generateGraphs(datasetManager, countryId, start);
-			mainMenu();
+		};
+		void showSimilarToCountry(DatasetManager datasetManager, string countryId, string indicatorId, int year, int degree, int start)
+		{
+			CountriesComparison::findSimilarCountries(datasetManager, countryId, indicatorId, year, degree);
+			while(datasetManager.numberOfSimilarCountries < 40 && degree < 80)
+			{
+				//cout << "Number of similar countries : " << datasetManager.numberOfSimilarCountries << endl;
+				//cout << "Degree : " << degree << endl;
+				CountriesComparison::findSimilarCountries(datasetManager, countryId, indicatorId, year, degree);
+				degree += 10;
+			}
+			string similarCountries[datasetManager.numberOfSimilarCountries];
+			cout << "--------------------------------" << endl;
+			cin.get();
+			GeneralTools::printArray(datasetManager.similarCountries, datasetManager.numberOfSimilarCountries);
+			for(int i = 0; i < datasetManager.numberOfSimilarCountries; i++)
+			{
+				similarCountries[i] = datasetManager.similarCountries[i];
+			}
+			degree = 5;
+			DatasetManager datasetManagerNew = CountriesComparison::findSimilarCountries(similarCountries, datasetManager.numberOfSimilarCountries, countryId, datasetManager.indicatorType, "NY.GDP.PCAP.CD", year, degree);
+			while (datasetManagerNew.numberOfSimilarCountries < 5)
+			{
+				//cout << "Number of similar countries : " << datasetManagerNew.numberOfSimilarCountries << endl;
+				//cout << "Degree : " << degree << endl;
+				datasetManagerNew = CountriesComparison::findSimilarCountries(similarCountries, datasetManager.numberOfSimilarCountries, countryId, datasetManager.indicatorType, "NY.GDP.PCAP.CD", year, degree);
+				degree += 2;
+			}
+			GeneralTools::printArray(datasetManagerNew.similarCountries, datasetManagerNew.numberOfSimilarCountries);
+			datasetManager = datasetManagerNew;
+			generateGraphs(datasetManager, countryId, start);
 		};
 		void generateGraphs(DatasetManager datasetManager, string mainCountryId, int start)
 		{

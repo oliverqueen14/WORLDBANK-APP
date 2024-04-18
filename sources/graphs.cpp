@@ -1,5 +1,5 @@
 #include <iostream>
-#include <gnuplot-iostream.h>
+#include "gnuplot-iostream/gnuplot-iostream.h"
 #include <string>
 #include "../headers/structs.h"
 
@@ -16,11 +16,11 @@ class Graphs{
 		Graphs(string nameFile, string title, int size)
 		{
 			this->size = size;
-		    gp << "set terminal pngcairo enhanced font 'Arial,10' size 1920, 1080\n"; // UHD resolution
+		    gp << "set terminal pngcairo enhanced font 'Arial,10' size 1280, 720\n"; // UHD resolution
 			gp << "set output '"<< nameFile << ".png" <<"'\n";  // Nom du fichier de sortie
 			gp << "set title '"<< title <<"'\n";
-			gp << "set title font ',20'\n";
-			gp << "set key font ',20'\n";
+			gp << "set title font ',14'\n";
+			gp << "set key font ',14'\n";
 			gp << "set key left top\n";
 			gp << "set style line 1 lc rgb '#000cc1' lt 1 lw 6 pt 7 ps 1.5\n"; // Blue line
 			gp << "set style line 2 lc rgb '#c10000' lt 1 lw 3 pt 7 ps 1.5\n"; // Red line
