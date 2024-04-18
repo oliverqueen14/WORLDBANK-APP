@@ -12,10 +12,12 @@ class Graphs{
 		Gnuplot gp;
 		std::vector<std::pair<int, double>> plotted[20];
 		int plotSize = 0;
-		Graphs(string nameFile)
+		int size;
+		Graphs(string nameFile, int size)
 		{
+			this->size = size;
 		    gp << "set terminal pngcairo enhanced font 'Arial,10' size 1280, 720\n"; // UHD resolution
-			gp << "set output '"<< nameFile << ".png" <<"'\n";  // Nom du fichier de sortie
+			gp << "set output 'pictures/"<< nameFile << ".png" <<"'\n";  // Nom du fichier de sortie
 			gp << "set key font ',20'\n";
 			gp << "set key left top\n";
 			gp << "set style line 1 lc rgb '#0060ad' lt 1 lw 6 pt 7 ps 1.5\n"; // Blue line
@@ -32,17 +34,23 @@ class Graphs{
 			std::vector<std::pair<int, double>> dataPlot;
 			for (int i = 0; i < data.size; i++) {
 				cout << "date : " << data.date[i] << " value : " << data.value[i] << endl;
-				dataPlot.push_back(std::make_pair(data.date[i], data.value[i]));
+				plotted[plotSize].push_back(std::make_pair(data.date[i], data.value[i]));
 			}
-			gp << "plot '-' with lines linestyle " << plotSize + 1 <<" title '"<< title <<",";
-			plotted[plotSize] = dataPlot;
+			if (plotSize == 0) {
+				gp << "plot '-' with lines linestyle " << plotSize + 2 <<" title '"<< title <<"',";
+			} else if (plotSize < size - 1) {
+				gp << " '-' with lines linestyle " << plotSize + 2 <<" title '"<< title <<"',";
+			}
+			else {
+				gp << " '-' with lines linestyle " << 1 <<" title '"<< title <<"'\n";
+			}
 			plotSize++;
 		}
 		void plotXaxe(Data data)
 		{
 			std::vector<std::pair<int, double>> dataPlot;
 			for (int i = 0; i < data.size; i++) {
-				dataPlot.push_back(std::make_pair(data.date[i], 0));
+				dataPlot.push_back(std::make_pair(data.date[i], 0.0));
 			}
 			gp << "plot '-' with lines linestyle " << 8 <<" title 'X axe',";
 			plotted[plotSize] = dataPlot;
@@ -50,7 +58,6 @@ class Graphs{
 		};
 		void send()
 		{
-			gp << "\n";
 			for (int i = 0; i < plotSize; i++) {
 				gp.send(plotted[i]);
 			}
