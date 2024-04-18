@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <unistd.h> 
 #include "../headers/structs.h"
+#include "graphs.cpp"
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -778,6 +779,17 @@ class Tools {
 				return findCountryId(countryNameResidual);
 			};
 		};
+		string findCountryName(string countryId)
+		{
+			for(int i = 0; i < countries.size; i++)
+			{
+				if(countries.id[i] == countryId)
+				{
+					return countries.name[i];
+				}
+			}
+			return "Country not found";
+		};
 		string findIndicatorId(string indicatorNameResidual)
 		{
 			string indicatorsIdFound[1000];
@@ -918,14 +930,16 @@ class Tools {
 		};
 		static double getDateValue(DataManager dataManager, int date)
 		{
-			DataManager dataManagerCopy(dataManager.countryId, dataManager.indicatorId);
+			DataManager * dataManagerCopy;
+			dataManagerCopy = new DataManager(dataManager.countryId, dataManager.indicatorId);
 			cout << "Date in getDateValue: " << date << endl;
-			int index = dateExists(dataManagerCopy, date);
+			int index = dateExists(*dataManagerCopy, date);
 			cout << "Index in getDateValue: " << index << endl;
 			if(index != -1)
 			{
-				double value = dataManagerCopy.data.value[index];
+				double value = (*dataManagerCopy).data.value[index];
 				cout << "Value in getDateValue: " << value << endl;
+				dataManagerCopy = NULL;
 				return value;
 			}
 			else
@@ -961,10 +975,28 @@ class DatasetManager {
 				for(int j = 0; j < sizeIndicators; j++)
 				{
 					dataManager[i*sizeIndicators+j].updateDataManager(tools.countries.id[i], this->indicatorsId[j]);
-					cout << "DataManager updated for " << tools.countries.id[i] << " " << this->indicatorsId[j] << endl;
+					cout << "DataManager updated for " << tools.countries.id[i] << " " << this->indicatorsId[j] << "%\r";
 				}
+				cout << "                                                                                                      						\r";
 			}
 		};
+		DatasetManager(string * countriesIdList, int sizeCountriesIdList,string indicatorType)
+		{
+			this->indicatorType = indicatorType;
+			this->indicatorsId = generalIndicators.getGeneralIndicatorsId(indicatorType);
+			this->sizeIndicators = generalIndicators.getGeneralIndicators(indicatorType).size;
+			dataManagerSize = sizeCountriesIdList*this->sizeIndicators;
+			dataManager = new DataManager[dataManagerSize];
+			for(int i = 0; i < sizeCountriesIdList; i++)
+			{
+				for(int j = 0; j < sizeIndicators; j++)
+				{
+					dataManager[i*sizeIndicators+j].updateDataManager(countriesIdList[i], this->indicatorsId[j]);
+					cout << "DataManager updated for " << countriesIdList[i] << " " << this->indicatorsId[j] << "%\r";
+				}
+				cout << "                                                                                                      						\r";
+			}
+		}
 		void updateIndicator(string indicatorType)
 		{
 			this->indicatorsId = generalIndicators.getGeneralIndicatorsId(indicatorType);
@@ -979,8 +1011,9 @@ class DatasetManager {
 				for(int j = 0; j < sizeIndicators; j++)
 				{
 					dataManager[i*sizeIndicators+j].updateDataManager(tools.countries.id[i], this->indicatorsId[j]);
-					cout << "DataManager updated for " << tools.countries.id[i] << " " << this->indicatorsId[j] << endl;
+					cout << "DataManager updated for " << tools.countries.id[i] << " " << this->indicatorsId[j] << "%\r";
 				}
+				cout << "                                                                                                      						\r";
 			}
 		};
 		void changeNumberOfSimilarCountries(int number)
@@ -1018,7 +1051,20 @@ class CountriesComparison {
 		};
 		static void findSimilarCountries(DatasetManager &datasetManager ,string countryId, string indicatorId, int year, int degree)
 		{
-			DatasetManager * datasetManagerCopy = new DatasetManager((&datasetManager)->indicatorType);
+			string * countriesId;
+			countriesId = new string[datasetManager.dataManagerSize];
+			int sizeCountriesId = 0;
+			for(int i = 0; i < datasetManager.dataManagerSize; i++)
+			{
+				if(datasetManager.dataManager[i].indicatorId == indicatorId)
+				{
+					cout << "Country : " << datasetManager.dataManager[i].countryId << " : " << datasetManager.dataManager[i].indicatorId << endl;
+					countriesId[sizeCountriesId] = datasetManager.dataManager[i].countryId;
+					sizeCountriesId++;
+				}
+			}
+			countriesId[sizeCountriesId-1] = countryId;
+			DatasetManager * datasetManagerCopy = new DatasetManager(countriesId, sizeCountriesId, datasetManager.indicatorType);
 			int index = Tools::findCountryIndicatorIndexInDataset(datasetManagerCopy->dataManager, countryId, indicatorId, datasetManagerCopy->dataManagerSize);
 			string * similarCountriesNew = new string[datasetManagerCopy->tools.countries.size];
 			double diff;
@@ -1047,26 +1093,166 @@ class CountriesComparison {
 					diffArray[i] = 0;
 				}
 			};
+			double degreeOfComparison = (double)degree;
 			for(int i = 0; i < datasetManagerCopy->dataManagerSize; i++)
 			{
 				if(diffArray[i] != 0)
 				{
-					if (diffArray[i]/value < (double)degree/100)
+					if (diffArray[i]/value < degreeOfComparison/100.0)
 					{
+						cout << "Country : " << datasetManagerCopy->dataManager[i].countryId << " : " << diffArray[i] / value << " : " << degreeOfComparison/100.0 << " : " << degreeOfComparison << endl;
 						similarCountriesNew[sizeSimilarCountriesNew] = datasetManagerCopy->dataManager[i].countryId;
 						sizeSimilarCountriesNew++;
 					};
 				};
 			};
 			GeneralTools::printArray(similarCountriesNew, sizeSimilarCountriesNew);
+			cout << "Number of similar countries : " << sizeSimilarCountriesNew << endl;
 			(&datasetManager)->changeSimilarCountries(similarCountriesNew, sizeSimilarCountriesNew);
 			cout << "Number of similar countries : " << sizeSimilarCountriesNew << endl;
 			(&datasetManager)->changeNumberOfSimilarCountries(sizeSimilarCountriesNew);
 			datasetManagerCopy = NULL;
 			delete datasetManagerCopy;
 		};
+		static DatasetManager findSimilarCountries(string * countriesIdList, int sizeCountriesIdList, string countryId, string indicatorType, string indicatorId, int year, int degree)
+		{
+			string countriesIdListNew[sizeCountriesIdList+1];
+			for(int i = 0; i < sizeCountriesIdList; i++)
+			{
+				countriesIdListNew[i] = countriesIdList[i];
+			}
+			cout << "CountryId pay attention : " << countryId << endl;
+			countriesIdListNew[sizeCountriesIdList] = countryId;
+			DatasetManager datasetManager(countriesIdList, sizeCountriesIdList+1, indicatorType);
+			findSimilarCountries(datasetManager, countryId, indicatorId, year, degree);
+			return datasetManager;
+		};
 };
 
+class Menu{
+	public:
+		GeneralIndicators generalIndicators;
+		DatasetManager datasetManager;
+		Tools tools;
+		Menu()
+		{
+			mainMenu();
+		};
+		void mainMenu()
+		{
+			int choice;
+			cout << "1 : Find similar countries" << endl;
+			cout << "2 : Change indicator" << endl;
+			cout << "3 : Exit" << endl;
+			cout << "Enter a choice : ";
+			cin >> choice;
+			if(choice == 1)
+			{
+				findSimilarCountries();
+			}
+			else if(choice == 2)
+			{
+				changeIndicator();
+			}
+			else if(choice == 3)
+			{
+				exit(0);
+			}
+			else
+			{
+				cout << "Invalid choice" << endl;
+				mainMenu();
+			}
+		};
+		void findSimilarCountries()
+		{
+			DatasetManager datasetManager = DatasetManager("macro economy");
+			string countryId;
+			string indicatorId;
+			int year;
+			int degree;
+			cout << "Enter a country name : ";
+			getchar();
+			getline(cin, countryId);
+			countryId = tools.findCountryId(countryId);
+			int index = Tools::findCountryIndicatorIndexInDataset(datasetManager.dataManager, countryId, "NY.GDP.MKTP.CD", datasetManager.dataManagerSize);
+			indicatorId = "NY.GDP.MKTP.CD";
+			cout << "Enter a year : ";
+			cin >> year;
+			while(Tools::getDateValue(datasetManager.dataManager[index], year) == -814.2003)
+			{
+				cout << "No data found for this year" << endl;
+				cout << "Enter a year : ";
+				cin >> year;
+			}
+			cout << "BOOM" << endl;
+			degree = 20;
+			CountriesComparison::findSimilarCountries(datasetManager, countryId, indicatorId, year, degree);
+			while(datasetManager.numberOfSimilarCountries < 40 && degree < 80)
+			{
+				cout << "Number of similar countries : " << datasetManager.numberOfSimilarCountries << endl;
+				cout << "Degree : " << degree << endl;
+				CountriesComparison::findSimilarCountries(datasetManager, countryId, indicatorId, year, degree);
+				degree += 10;
+			}
+			string similarCountries[datasetManager.numberOfSimilarCountries];
+			cout << "--------------------------------" << endl;
+			GeneralTools::printArray(datasetManager.similarCountries, datasetManager.numberOfSimilarCountries);
+			for(int i = 0; i < datasetManager.numberOfSimilarCountries; i++)
+			{
+				similarCountries[i] = datasetManager.similarCountries[i];
+			}
+			degree = 5;
+			DatasetManager datasetManagerNew = CountriesComparison::findSimilarCountries(similarCountries, datasetManager.numberOfSimilarCountries, countryId, datasetManager.indicatorType, "NY.GDP.PCAP.CD", year, degree);
+			while (datasetManagerNew.numberOfSimilarCountries < 5)
+			{
+				cout << "Number of similar countries : " << datasetManagerNew.numberOfSimilarCountries << endl;
+				cout << "Degree : " << degree << endl;
+				datasetManagerNew = CountriesComparison::findSimilarCountries(similarCountries, datasetManager.numberOfSimilarCountries, countryId, datasetManager.indicatorType, "NY.GDP.PCAP.CD", year, degree);
+				degree += 3;
+			}
+			datasetManager = datasetManagerNew;
+			cin.get();
+			int pause;
+			cout << "Enter a number to continue : ";
+			cin >> pause;
+			generateGraphs(datasetManager, countryId);
+			mainMenu();
+		};
+		void generateGraphs(DatasetManager datasetManager, string mainCountryId)
+		{
+			DataManager * dataManager;
+			for(int i = 0; i < 5; i++)
+			{
+				for(int j = 0; j < generalIndicators.bookGeneralIndicators[i]->size; j++)
+				{
+					dataManager = new DataManager[datasetManager.numberOfSimilarCountries+1];
+					for(int k = 0; k < datasetManager.numberOfSimilarCountries; k++)
+					{
+						dataManager[k].updateDataManager(datasetManager.similarCountries[k], generalIndicators.bookGeneralIndicators[i]->generalIndicators[j][1]);
+					}
+					dataManager[datasetManager.numberOfSimilarCountries].updateDataManager(mainCountryId, generalIndicators.bookGeneralIndicators[i]->generalIndicators[j][1]);
+					string fileName = mainCountryId + "_" + generalIndicators.bookGeneralIndicators[i]->generalIndicators[j][1];
+					Graphs graphs(fileName);
+					for(int k = 0; k < datasetManager.numberOfSimilarCountries+1; k++)
+					{
+						graphs.plot(tools.findCountryName(dataManager[k].countryId), dataManager[k].data);
+					}
+					graphs.send();
+					delete[] dataManager;
+				}
+			}
+		};
+		void changeIndicator()
+		{
+			string indicatorType;
+			cout << "Enter an indicator type : ";
+			getchar();
+			getline(cin, indicatorType);
+			datasetManager.updateIndicator(indicatorType);
+			mainMenu();
+		};
+};
 
 
 
