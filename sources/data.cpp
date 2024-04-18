@@ -189,7 +189,7 @@ class DataManager {
 		{
 			if(dataReady)
 			{
-				cout << "Country : " << countryId << " : Indicator : " << indicatorId << endl;
+				//cout << "Country : " << countryId << " : Indicator : " << indicatorId << endl;
 				for(int i = 0; i < data.size; i++)
 				{
 					cout << data.date[i] << " : " << data.value[i] << endl;
@@ -199,6 +199,13 @@ class DataManager {
 			{
 				readCSV();
 				printData();
+			}
+		};
+		void printData(Data data)
+		{
+			for(int i = 0; i < data.size; i++)
+			{
+				cout << data.date[i] << " : " << data.value[i] << endl;
 			}
 		};
 		void printDates()
@@ -212,6 +219,32 @@ class DataManager {
 				readCSV();
 				printDates();
 			}
+		};
+		Data getData(int start, int end)
+		{
+			Data newData;
+			newData.size = 0;
+			for(int i = 0; i < data.size; i++)
+			{
+				if(data.date[i] >= start && data.date[i] <= end)
+				{
+					newData.size++;
+				}
+			}
+			//cout << "newData.size : " << newData.size << endl;
+			newData.date = new int[newData.size];
+			newData.value = new double[newData.size];
+			int j = 0;
+			for(int i = 0; i < data.size; i++)
+			{
+				if(data.date[i] >= start && data.date[i] <= end)
+				{
+					newData.date[j] = data.date[i];
+					newData.value[j] = data.value[i];
+					j++;
+				}
+			}
+			return newData;
 		};
 		int getData()
 		{
@@ -781,14 +814,21 @@ class Tools {
 		};
 		string findCountryName(string countryId)
 		{
+			string countryName = "Country not found";
 			for(int i = 0; i < countries.size; i++)
 			{
 				if(countries.id[i] == countryId)
 				{
-					return countries.name[i];
+					countryName = countries.name[i];
 				}
 			}
-			return "Country not found";
+			string newName;
+			for (char caractere : countryName) {
+				if (caractere != '.' && caractere != '\'') {
+					newName += caractere;
+				};
+			};
+			return newName;
 		};
 		string findIndicatorId(string indicatorNameResidual)
 		{
@@ -932,13 +972,13 @@ class Tools {
 		{
 			DataManager * dataManagerCopy;
 			dataManagerCopy = new DataManager(dataManager.countryId, dataManager.indicatorId);
-			cout << "Date in getDateValue: " << date << endl;
+			//cout << "Date in getDateValue: " << date << endl;
 			int index = dateExists(*dataManagerCopy, date);
-			cout << "Index in getDateValue: " << index << endl;
+			//cout << "Index in getDateValue: " << index << endl;
 			if(index != -1)
 			{
 				double value = (*dataManagerCopy).data.value[index];
-				cout << "Value in getDateValue: " << value << endl;
+				//cout << "Value in getDateValue: " << value << endl;
 				dataManagerCopy = NULL;
 				return value;
 			}
@@ -975,15 +1015,15 @@ class DatasetManager {
 				for(int j = 0; j < sizeIndicators; j++)
 				{
 					dataManager[i*sizeIndicators+j].updateDataManager(tools.countries.id[i], this->indicatorsId[j]);
-					cout << "DataManager updated for1 " << tools.countries.id[i] << " " << this->indicatorsId[j] << endl; //<< "%\r";
-					cout << this->indicatorsId[j] << endl;
+					//cout << "DataManager updated for1 " << tools.countries.id[i] << " " << this->indicatorsId[j] << endl; //<< "%\r";
+					//cout << this->indicatorsId[j] << endl;
 				}
-				cout << "                                                                                                      						\r";
+				//cout << "                                                                                                      						\r";
 			}
 		};
 		DatasetManager(string * countriesIdList, int sizeCountriesIdList,string indicatorType)
 		{
-			cout << "DataManagerBRUH " << sizeCountriesIdList << " " << countriesIdList[sizeCountriesIdList-1] << endl;
+			//cout << "DataManagerBRUH " << sizeCountriesIdList << " " << countriesIdList[sizeCountriesIdList-1] << endl;
 			this->indicatorType = indicatorType;
 			//cout << "something " << countriesIdList[sizeCountriesIdList-1] << endl;
 			this->indicatorsId = generalIndicators.getGeneralIndicatorsId(indicatorType);
@@ -996,7 +1036,7 @@ class DatasetManager {
 				{
 					dataManager[i*sizeIndicators+j].updateDataManager(countriesIdList[i], this->indicatorsId[j]);
 					//cout << "DataManager updated for2 " << countriesIdList[i] << " " << this->indicatorsId[j] << endl;// "%\r";
-					cout << this->indicatorsId[j] << endl;
+					//cout << this->indicatorsId[j] << endl;
 				}
 				cout << "                                                                                                      						\r";
 			}
@@ -1007,23 +1047,23 @@ class DatasetManager {
 			this->sizeIndicators = generalIndicators.getGeneralIndicators(indicatorType).size;
 			dataManagerSize = tools.countries.size*this->sizeIndicators;
 			delete[] dataManager;
-			cout << "DataManager deleted" << endl;
+			//cout << "DataManager deleted" << endl;
 			dataManager = new DataManager[dataManagerSize];
-			cout << "DataManager created" << endl;
+			//cout << "DataManager created" << endl;
 			for(int i = 0; i < tools.countries.size; i++)
 			{
 				for(int j = 0; j < sizeIndicators; j++)
 				{
 					dataManager[i*sizeIndicators+j].updateDataManager(tools.countries.id[i], this->indicatorsId[j]);
-					cout << "DataManager updated for3 " << tools.countries.id[i] << " " << this->indicatorsId[j] << endl;//"%\r";
-					cout << this->indicatorsId[j] << endl;
+					//cout << "DataManager updated for3 " << tools.countries.id[i] << " " << this->indicatorsId[j] << endl;//"%\r";
+					//cout << this->indicatorsId[j] << endl;
 				}
-				cout << "                                                                                                      						\r";
+				//cout << "                                                                                                      						\r";
 			}
 		};
 		void changeNumberOfSimilarCountries(int number)
 		{
-			cout << "Number of similar countries : " << number << endl;
+			//cout << "Number of similar countries : " << number << endl;
 			numberOfSimilarCountries = number;
 		};
 		void changeSimilarCountries(string similarCountries[],  int size)
@@ -1041,7 +1081,7 @@ class DatasetManager {
 		~DatasetManager()
 		{
 			delete[] dataManager;
-			cout << "DatasetManager destructor called" << endl;
+			//cout << "DatasetManager destructor called" << endl;
 		};
 		
 
@@ -1111,7 +1151,7 @@ class CountriesComparison {
 					};
 				};
 			};
-			GeneralTools::printArray(similarCountriesNew, sizeSimilarCountriesNew);
+			//GeneralTools::printArray(similarCountriesNew, sizeSimilarCountriesNew);
 			(&datasetManager)->changeSimilarCountries(similarCountriesNew, sizeSimilarCountriesNew);
 			(&datasetManager)->changeNumberOfSimilarCountries(sizeSimilarCountriesNew);
 			datasetManagerCopy = NULL;
@@ -1182,7 +1222,7 @@ class Menu{
 			countryId = tools.findCountryId(countryId);
 			int index = Tools::findCountryIndicatorIndexInDataset(datasetManager.dataManager, countryId, "NY.GDP.MKTP.CD", datasetManager.dataManagerSize);
 			indicatorId = "NY.GDP.MKTP.CD";
-			cout << "Enter a year : ";
+			cout << "Enter a year for Comparaison : ";
 			cin >> year;
 			while(Tools::getDateValue(datasetManager.dataManager[index], year) == -814.2003)
 			{
@@ -1190,13 +1230,13 @@ class Menu{
 				cout << "Enter a year : ";
 				cin >> year;
 			}
-			cout << "BOOM" << endl;
+			//cout << "BOOM" << endl;
 			degree = 20;
 			CountriesComparison::findSimilarCountries(datasetManager, countryId, indicatorId, year, degree);
 			while(datasetManager.numberOfSimilarCountries < 40 && degree < 80)
 			{
-				cout << "Number of similar countries : " << datasetManager.numberOfSimilarCountries << endl;
-				cout << "Degree : " << degree << endl;
+				//cout << "Number of similar countries : " << datasetManager.numberOfSimilarCountries << endl;
+				//cout << "Degree : " << degree << endl;
 				CountriesComparison::findSimilarCountries(datasetManager, countryId, indicatorId, year, degree);
 				degree += 10;
 			}
@@ -1212,20 +1252,20 @@ class Menu{
 			DatasetManager datasetManagerNew = CountriesComparison::findSimilarCountries(similarCountries, datasetManager.numberOfSimilarCountries, countryId, datasetManager.indicatorType, "NY.GDP.PCAP.CD", year, degree);
 			while (datasetManagerNew.numberOfSimilarCountries < 5)
 			{
-				cout << "Number of similar countries : " << datasetManagerNew.numberOfSimilarCountries << endl;
-				cout << "Degree : " << degree << endl;
+				//cout << "Number of similar countries : " << datasetManagerNew.numberOfSimilarCountries << endl;
+				//cout << "Degree : " << degree << endl;
 				datasetManagerNew = CountriesComparison::findSimilarCountries(similarCountries, datasetManager.numberOfSimilarCountries, countryId, datasetManager.indicatorType, "NY.GDP.PCAP.CD", year, degree);
-				degree += 3;
+				degree += 2;
 			}
+			GeneralTools::printArray(datasetManagerNew.similarCountries, datasetManagerNew.numberOfSimilarCountries);
 			datasetManager = datasetManagerNew;
-			cin.get();
-			int pause;
-			cout << "Enter a number to continue : ";
-			cin >> pause;
-			generateGraphs(datasetManager, countryId);
+			int start;
+			cout << "Enter the year to start graph : ";
+			cin >> start;
+			generateGraphs(datasetManager, countryId, start);
 			mainMenu();
 		};
-		void generateGraphs(DatasetManager datasetManager, string mainCountryId)
+		void generateGraphs(DatasetManager datasetManager, string mainCountryId, int start)
 		{
 			DataManager * dataManager;
 			for(int i = 0; i < 5; i++)
@@ -1239,12 +1279,13 @@ class Menu{
 					}
 					dataManager[datasetManager.numberOfSimilarCountries].updateDataManager(mainCountryId, generalIndicators.bookGeneralIndicators[i]->generalIndicators[j][1]);
 					string fileName = mainCountryId + "_" + generalIndicators.bookGeneralIndicators[i]->generalIndicators[j][1];
-					Graphs graphs(fileName, datasetManager.numberOfSimilarCountries+1);
+					fileName = tools.findCountryName(mainCountryId) + "_" + generalIndicators.bookGeneralIndicators[i]->generalIndicators[j][0];
+					Graphs graphs(fileName, generalIndicators.bookGeneralIndicators[i]->generalIndicators[j][0], datasetManager.numberOfSimilarCountries+1);
 					for(int k = 0; k < datasetManager.numberOfSimilarCountries+1; k++)
 					{
-						cout << "Country : " << dataManager[k].countryId << " : " << dataManager[k].indicatorId << endl;
+						//cout << "Country : " << dataManager[k].countryId << " : " << dataManager[k].indicatorId << endl;
 						
-						graphs.plot(tools.findCountryName(dataManager[k].countryId), dataManager[k].data);
+						graphs.plot(tools.findCountryName(dataManager[k].countryId), dataManager[k].getData(start, 2024));
 					}
 					graphs.send();
 					delete[] dataManager;
